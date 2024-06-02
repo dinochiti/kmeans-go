@@ -182,9 +182,9 @@ func pointsWorker(points [][]float64, centroidsChan chan *[][]float64, continueC
 	}
 }
 
-// readPointsFile reads in points from the nnamed input file
+// readPointsFile reads in points from the named input file
 //
-// assumes the file is (mostly) well-formed; specifically that
+// (mostly) assumes the file is well-formed; specifically that
 // it has the number of points it claims to, and that each point
 // has the same number of dimensions
 func readPointsFile(inputFileName string) *[][]float64 {
@@ -234,7 +234,7 @@ func readPointsFile(inputFileName string) *[][]float64 {
 }
 
 // firstCentroids creates an initial set of centroids for clustering by
-// (psuedo-) randomly selecting points as initial centroids
+// (pseudo-) randomly selecting points as initial centroids
 func firstCentroids(numCentroids int, points *[][]float64, randomSeed uint64) *[][]float64 {
 	numPoints := len(*points)
 	numDimensions := len((*points)[0])
