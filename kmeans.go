@@ -8,9 +8,6 @@
 //     centroids in the old and new sets is less than the given
 //     threshold
 //
-// the program does not save the cluster assignments anywhere as correctness
-// is judged by the final set of centroids
-//
 // points are read in from an input file; the file format and the example
 // input files used are directly from the University of Texas at Austin
 // CS380P online Parallel Systems course K-means clustering lab
@@ -31,7 +28,7 @@ import (
 )
 
 type CentroidAssignment struct {
-	point    []float64
+	point    int
 	centroid int
 }
 
@@ -47,7 +44,7 @@ func main() {
 	var randSeed uint64 = 0
 	flag.Uint64Var(&randSeed, "seed", 0, "seed for rndom number generation (optional; defaults to 0)")
 	var outputCentroids = false
-	flag.BoolVar(&outputCentroids, "centroids", false, "whether to output the final centroids")
+	flag.BoolVar(&outputCentroids, "centroids", false, "output the final centroids (instead of the final cluster assignments)")
 	flag.Parse()
 	if inputFileName == "" || numClusters == 0 || numWorkers == 0 || threshold == 0.0 {
 		flag.Usage()
@@ -71,17 +68,18 @@ func main() {
 	// the channel for centroid assignment can buffer up to all of the assignments
 	centroidAssignmentChan := make(chan CentroidAssignment, numPoints)
 	centroids := firstCentroids(numClusters, points, randSeed)
+	clusterAssgnments := make([]int, numPoints)
 
 	for blockNumber := range numWorkers {
 		startIndex, stopIndex := getIndexes(numPoints, numWorkers, blockNumber)
-		go pointsWorker((*points)[startIndex:stopIndex], centroidsChan, continueChan, centroidAssignmentChan, &waitGroup)
+		go pointsWorker(points, startIndex, stopIndex, centroidsChan, continueChan, centroidAssignmentChan, &waitGroup)
 	}
 
 	iterations := 0
 	for {
 		iterations++
 		newCentroids := contiguous2DFloats(numClusters, numDimensions)
-		assignments := make([]int, numClusters)
+		clusterAssignmentCount := make([]int, numClusters)
 		// signal all workers to assign their points
 		for range numWorkers {
 			centroidsChan <- centroids
@@ -95,20 +93,24 @@ func main() {
 		// correct centroid channel? That, or the main thread here could still
 		// collect all assignments and shunt them off to the correct centroid
 		// channel itself...
+		// each iteration the worker threads in aggregate will send one point
+		// assignment for each point, so range on numPoints
 		for range numPoints {
 			nextAssignment := <-centroidAssignmentChan
+			clusterAssgnments[nextAssignment.point] = nextAssignment.centroid
 			// for the assigned centroid, increase its assignment count
-			assignments[nextAssignment.centroid]++
+			clusterAssignmentCount[nextAssignment.centroid]++
 			// accumulate the dimensions of this latest assigned point, for later averaging
 			assignedCentroid := (*newCentroids)[nextAssignment.centroid]
-			for dimIndex, dim := range nextAssignment.point {
+			for dimIndex, dim := range (*points)[nextAssignment.point] {
 				assignedCentroid[dimIndex] += dim
 			}
 		}
-		// all dimensions have been accumulated to new centroids for all points;
-		// average the dimensions to finalize new centroid calculations
+		// all dimensions have been accumulated to new centroids for all points
+		// and all point assignments have been recorded; average the dimensions
+		// of the centroid accumulations to finalize new centroid coordinates
 		for centIndex, centroid := range *newCentroids {
-			divisor := assignments[centIndex]
+			divisor := clusterAssignmentCount[centIndex]
 			for dimIndex := 0; dimIndex < numDimensions; dimIndex++ {
 				centroid[dimIndex] /= float64(divisor)
 			}
@@ -143,6 +145,12 @@ func main() {
 			}
 			fmt.Println()
 		}
+	} else {
+		fmt.Printf("clusters:")
+		for _, cluster := range clusterAssgnments {
+			fmt.Printf(" %d", cluster)
+		}
+		fmt.Println()
 	}
 }
 
@@ -160,15 +168,16 @@ func main() {
 // meanwhile the stealing routine would start more calculations prematurely
 //
 // assumes points and centroids all have the same number of dimensions
-func pointsWorker(points [][]float64, centroidsChan chan *[][]float64, continueChan chan bool, centroidAssignmentChan chan CentroidAssignment, waitGroup *sync.WaitGroup) {
+func pointsWorker(points *[][]float64, startIndex int, stopIndex int, centroidsChan chan *[][]float64, continueChan chan bool, centroidAssignmentChan chan CentroidAssignment, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	for {
 		centroids := <-centroidsChan
-		for _, point := range points {
-			centAssignment := CentroidAssignment{point, -1}
+		for index := startIndex; index < stopIndex; index++ {
+			//for _, point := range points {
+			centAssignment := CentroidAssignment{index, -1}
 			minimumSquaredDistance := math.MaxFloat64
 			for centIndex, cent := range *centroids {
-				nextSquaredDistance := squareOfEuclideanDistance(point, cent)
+				nextSquaredDistance := squareOfEuclideanDistance((*points)[index], cent)
 				if nextSquaredDistance < minimumSquaredDistance {
 					minimumSquaredDistance = nextSquaredDistance
 					centAssignment.centroid = centIndex
