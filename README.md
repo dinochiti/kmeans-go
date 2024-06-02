@@ -2,17 +2,19 @@
 
 An application to calculate clusters for a set of points using the K-means method.
 
-This is a Go version of a lab exercise from .
+This is a Go version of a lab exercise from the University of Texas at Austin CS380P Parallel Systems course in the online Masters of Computer Science program.
 
+The points to cluster are read in from an input file; the file format and the example input files used are directly from the lab.
 
-// points are read in from an input file; the file format and the example
-// input files used are directly from the University of Texas at Austin
-// CS380P online Parallel Systems course K-means clustering lab
-// https://www.cs.utexas.edu/~rossbach/cs380p/index.html
+https://www.cs.utexas.edu/~rossbach/cs380p/index.html
 
 ## Build
 
-Clone the repo and build from the root directory as usual for Go.
+Clone the repo and build from the root directory as usual for Go, i.e., 
+
+```console
+you@there:~/kmeans-go$ go build
+```
 
 ## Inspiration
 
