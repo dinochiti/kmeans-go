@@ -16,6 +16,22 @@ Clone the repo and build from the root directory as usual for Go, i.e.,
 you@there:~/kmeans-go$ go build
 ```
 
+## Timings
+
+Does it work? Does adding goroutines as workers improve performance?
+
+The `manyruns.py` Python script runs the executable many times with different inputs, several times per input set, with a max and min result discarded.
+
+Here's the total time trended across input sets and numbers of worker routines:
+
+| number of workers  |  1     |  2     |  4     |  8     |  16    |
+|--------------------|--------|--------|--------|--------|--------|
+| 16 dims, 2048 pts  | 7.5455 | 6.3636 | 6.3636 | 6.3636 | 6.8182 |
+| 24 dims, 16384 pts | 68.818 | 49.090 | 48.818 | 50.454 | 51.000 |
+| 32 dims, 65536 pts | 354.68 | 235.09 | 208.04 | 200.95 | 200.77 |
+
+Clearly more workers get the job done faster, especially as the amount of data increases.
+
 ## Inspiration
 
 The UT CS380P Parallel Systems class had 5 labs each solving a different embarrassingly parallelizable challenge using a different language or tool.
