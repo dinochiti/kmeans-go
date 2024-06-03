@@ -30,7 +30,7 @@ Here's the total time trended across input sets and numbers of worker routines:
 | 24 dims, 16384 pts | 68.818 | 49.090 | 48.818 | 50.454 | 51.000 |
 | 32 dims, 65536 pts | 354.68 | 235.09 | 208.04 | 200.95 | 200.77 |
 
-Clearly more workers get the job done faster, especially as the amount of data increases.
+Clearly more workers usually get the job done faster, especially as the amount of data increases.
 
 ## Inspiration
 
