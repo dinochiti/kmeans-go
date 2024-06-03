@@ -22,7 +22,7 @@ Does it work? Does adding goroutines as workers improve performance?
 
 The `manyruns.py` Python script runs the executable many times with different inputs, several times per input set, with a max and min result discarded.
 
-Here's the total time trended across input sets and numbers of worker routines:
+Here's the total time in milliseconds trended across input sets and numbers of worker routines:
 
 | number of workers  |  1     |  2     |  4     |  8     |  16    |
 |--------------------|--------|--------|--------|--------|--------|
