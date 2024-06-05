@@ -36,7 +36,7 @@ Clearly more workers usually get the job done faster, especially as the amount o
 
 The UT CS380P Parallel Systems class had 5 labs each solving a different embarrassingly parallelizable challenge using a different language or tool.
 
-We solved clustering with K-Means using C++ and Cuda. (I don't have that repo public here in GitHub because it would serve as a cheat source for future students in the class.)
+We solved clustering with K-Means using C and Cuda. (I don't have that repo public here in GitHub because it would serve as a cheat source for future students in the class.)
 
 We also solved equivalence comparison for Binary Search Trees using Go.
 
